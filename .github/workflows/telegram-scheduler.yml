@@ -1,0 +1,46 @@
+name: Telegram Group Scheduler
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+    - cron: "20 21 * * *"
+    - cron: "30 21 * * *"
+
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "open warning close"
+        required: true
+        default: "warning"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install -r requirements.txt
+
+      - name: Set Action
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "ACTION=${{ github.event.inputs.action }}" >> $GITHUB_ENV
+          elif [ "${{ github.event.schedule }}" = "0 4 * * *" ]; then
+            echo "ACTION=open" >> $GITHUB_ENV
+          elif [ "${{ github.event.schedule }}" = "20 21 * * *" ]; then
+            echo "ACTION=warning" >> $GITHUB_ENV
+          elif [ "${{ github.event.schedule }}" = "30 21 * * *" ]; then
+            echo "ACTION=close" >> $GITHUB_ENV
+          fi
+
+      - name: Run Bot
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GROUP_ID: ${{ secrets.GROUP_ID }}
+          ACTION: ${{ env.ACTION }}
+        run: python telegram_control.py

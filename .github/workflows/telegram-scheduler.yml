@@ -2,19 +2,27 @@ name: Telegram Group Scheduler
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  
+
 on:
   schedule:
+    # 07:00 Istanbul = 04:00 UTC
     - cron: "0 4 * * *"
-    - cron: "20 21 * * *"
-    - cron: "30 21 * * *"
+
+    # 20:00 Istanbul = 17:00 UTC
+    - cron: "0 17 * * *"
+
+    # 23:50 Istanbul = 20:50 UTC
+    - cron: "50 20 * * *"
+
+    # 00:00 Istanbul = 21:00 UTC
+    - cron: "0 21 * * *"
 
   workflow_dispatch:
     inputs:
       action:
-        description: "open warning close"
+        description: "open, ad, goodnight, close"
         required: true
-        default: "warning"
+        default: "open"
 
 jobs:
   run:
@@ -35,9 +43,11 @@ jobs:
             echo "ACTION=${{ github.event.inputs.action }}" >> $GITHUB_ENV
           elif [ "${{ github.event.schedule }}" = "0 4 * * *" ]; then
             echo "ACTION=open" >> $GITHUB_ENV
-          elif [ "${{ github.event.schedule }}" = "20 21 * * *" ]; then
-            echo "ACTION=warning" >> $GITHUB_ENV
-          elif [ "${{ github.event.schedule }}" = "30 21 * * *" ]; then
+          elif [ "${{ github.event.schedule }}" = "0 17 * * *" ]; then
+            echo "ACTION=ad" >> $GITHUB_ENV
+          elif [ "${{ github.event.schedule }}" = "50 20 * * *" ]; then
+            echo "ACTION=goodnight" >> $GITHUB_ENV
+          elif [ "${{ github.event.schedule }}" = "0 21 * * *" ]; then
             echo "ACTION=close" >> $GITHUB_ENV
           fi
 

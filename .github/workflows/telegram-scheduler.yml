@@ -6,16 +6,19 @@ env:
 on:
   schedule:
     # 07:00 Istanbul = 04:00 UTC
-    - cron: "0 4 * * *"
+    - cron: "1 4 * * *"
 
     # 20:00 Istanbul = 17:00 UTC
-    - cron: "0 17 * * *"
+    - cron: "3 17 * * *"
 
     # 23:50 Istanbul = 20:50 UTC
     - cron: "50 20 * * *"
 
-    # 00:00 Istanbul = 21:00 UTC
-    - cron: "0 21 * * *"
+    # Close before midnight: 23:59 Istanbul = 20:59 UTC
+    - cron: "59 20 * * *"
+
+    # Backup close: 00:05 Istanbul = 21:05 UTC
+    - cron: "5 21 * * *"
 
   workflow_dispatch:
     inputs:
@@ -39,16 +42,24 @@ jobs:
 
       - name: Set Action
         run: |
+          echo "EVENT_NAME=${{ github.event_name }}"
+          echo "SCHEDULE=${{ github.event.schedule }}"
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "ACTION=${{ github.event.inputs.action }}" >> $GITHUB_ENV
-          elif [ "${{ github.event.schedule }}" = "0 4 * * *" ]; then
+          elif [ "${{ github.event.schedule }}" = "1 4 * * *" ]; then
             echo "ACTION=open" >> $GITHUB_ENV
-          elif [ "${{ github.event.schedule }}" = "0 17 * * *" ]; then
+          elif [ "${{ github.event.schedule }}" = "3 17 * * *" ]; then
             echo "ACTION=ad" >> $GITHUB_ENV
           elif [ "${{ github.event.schedule }}" = "50 20 * * *" ]; then
             echo "ACTION=goodnight" >> $GITHUB_ENV
-          elif [ "${{ github.event.schedule }}" = "0 21 * * *" ]; then
+          elif [ "${{ github.event.schedule }}" = "59 20 * * *" ]; then
             echo "ACTION=close" >> $GITHUB_ENV
+          elif [ "${{ github.event.schedule }}" = "5 21 * * *" ]; then
+            echo "ACTION=close" >> $GITHUB_ENV
+          else
+            echo "Unknown schedule"
+            exit 1
           fi
 
       - name: Run Bot
